@@ -2,13 +2,13 @@
 
 ## Hardware
 
-| Item | Part | Key facts |
-|---|---|---|
-| MCU board | SiFive HiFive1 Rev B (FE310-G002) | **No ADC**, 3.3 V I/O only, hardware I²C/SPI/UART/PWM |
-| Shield | Electrokit EDU Shield for Arduino | Mostly analog sensors (unusable) + 2× QWIIC I²C (usable) |
-| Driver | A4988 module (Hailege / Rungee) | Chopper current driver, VMOT 8–35 V, ~1 A bare / ~1.5 A with heatsink |
-| Motor | 42SHD0217-24B | NEMA 17 bipolar, **1.5 A/phase**, 2.2 Ω, ~3.3 V rated |
-| Power | 3S LiPo | ~9–12.6 V; sits inside A4988's VMOT range |
+| Item      | Part                              | Key facts                                                             |
+| --------- | --------------------------------- | --------------------------------------------------------------------- |
+| MCU board | SiFive HiFive1 Rev B (FE310-G002) | **No ADC**, 3.3 V I/O only, hardware I²C/SPI/UART/PWM                 |
+| Shield    | Electrokit EDU Shield for Arduino | Mostly analog sensors (unusable) + 2× QWIIC I²C (usable)              |
+| Driver    | A4988 module (Hailege / Rungee)   | Chopper current driver, VMOT 8–35 V, ~1 A bare / ~1.5 A with heatsink |
+| Motor     | 42SHD0217-24B                     | NEMA 17 bipolar, **1.5 A/phase**, 2.2 Ω, ~3.3 V rated                 |
+| Power     | 3S LiPo                           | ~9–12.6 V; sits inside A4988's VMOT range                             |
 
 ## The one constraint that drives everything
 
@@ -20,24 +20,24 @@ as digital pins, unlike a real Uno). Anything analog must go through an external
 
 ## Peripheral matrix — Electrokit EDU Shield on HiFive1 Rev B
 
-| Shield feature | Header pin | FE310 GPIO | Status | Notes |
-|---|---|---|---|---|
-| Analog light sensor | A0 | — | ❌ Dead | No ADC |
-| Potentiometer | A1 | — | ❌ Dead | No ADC — use the encoder instead |
-| External analog GPIO | A2 | — | ❌ Dead | No ADC |
-| Analog temp sensor | A3 | — | ❌ Dead | No ADC — use an I²C temp sensor instead |
-| QWIIC I²C ×2 | D18/D19 | GPIO12/13 | ✅ Works | **Your way in** for sensors |
-| UART connector | D0/D1 | GPIO16/17 | ✅ Works | Also the USB debug console |
-| Speaker (PWM tone) | D2 | GPIO18 | ✅ Works | |
-| Rotary encoder + button | D3/D4/D5 | GPIO19/20/21 | ✅ Works | Best knob substitute for the dead pot |
-| WS2812B RGB LED | D6 | GPIO22 | ⚠️ Maybe | Needs tight bit-bang timing; no RISC-V lib ready |
-| Button 1 | D7 | — | ❌ Dead | Pin not connected on HiFive |
-| Button 2 | D8 | — | ❌ Dead | Pin not connected on HiFive |
-| LED 1 | D9 | GPIO1 | ✅ Works | |
-| LED 2 | D10 | GPIO2 | ✅ Works | |
-| LED 3 | D11 | GPIO3 | ⚠️ Cond. | SPI MOSI — plain output only if SPI unused |
-| Servo | D12 | GPIO4 | ⚠️ Cond. | SPI MISO — conflicts if SPI active |
-| Button 3 | D13 | GPIO5 | ⚠️ Cond. | SPI SCK — no effect while SPI active |
+| Shield feature          | Header pin | FE310 GPIO   | Status   | Notes                                            |
+| ----------------------- | ---------- | ------------ | -------- | ------------------------------------------------ |
+| Analog light sensor     | A0         | —            | ❌ Dead  | No ADC                                           |
+| Potentiometer           | A1         | —            | ❌ Dead  | No ADC — use the encoder instead                 |
+| External analog GPIO    | A2         | —            | ❌ Dead  | No ADC                                           |
+| Analog temp sensor      | A3         | —            | ❌ Dead  | No ADC — use an I²C temp sensor instead          |
+| QWIIC I²C ×2            | D18/D19    | GPIO12/13    | ✅ Works | **Your way in** for sensors                      |
+| UART connector          | D0/D1      | GPIO16/17    | ✅ Works | Also the USB debug console                       |
+| Speaker (PWM tone)      | D2         | GPIO18       | ✅ Works |                                                  |
+| Rotary encoder + button | D3/D4/D5   | GPIO19/20/21 | ✅ Works | Best knob substitute for the dead pot            |
+| WS2812B RGB LED         | D6         | GPIO22       | ⚠️ Maybe | Needs tight bit-bang timing; no RISC-V lib ready |
+| Button 1                | D7         | —            | ❌ Dead  | Pin not connected on HiFive                      |
+| Button 2                | D8         | —            | ❌ Dead  | Pin not connected on HiFive                      |
+| LED 1                   | D9         | GPIO1        | ✅ Works |                                                  |
+| LED 2                   | D10        | GPIO2        | ✅ Works |                                                  |
+| LED 3                   | D11        | GPIO3        | ⚠️ Cond. | SPI MOSI — plain output only if SPI unused       |
+| Servo                   | D12        | GPIO4        | ⚠️ Cond. | SPI MISO — conflicts if SPI active               |
+| Button 3                | D13        | GPIO5        | ⚠️ Cond. | SPI SCK — no effect while SPI active             |
 
 **Net result:** all four analog sensors and two of three buttons are gone. Everything you
 actually need survives: speaker, encoder, LEDs, UART console, and both QWIIC I²C ports.
@@ -62,34 +62,34 @@ Zephyr devicetree and the FE310 registers actually use.
 Sourced from `boards/sifive/hifive1/hifive1.dts` (the `arduino_header` map),
 `hifive1-pinctrl.dtsi`, and `dts/riscv/sifive/riscv32-fe310.dtsi`.
 
-| Uno silk | Uno alt # | Zephyr DT | FE310 GPIO | IOF0 | IOF1 | Notes |
-|---|---|---|---|---|---|---|
-| D0 | — | D0 | GPIO16 | UART0 RX | — | console UART |
-| D1 | — | D1 | GPIO17 | UART0 TX | — | console UART |
-| D2 | — | D2 | GPIO18 | — | — | **no PWM/serial mux** — plain GPIO only |
-| D3 | — | D3 | GPIO19 | — | PWM1 ch1 | onboard **green** LED (`led0`) |
-| D4 | — | D4 | GPIO20 | — | PWM1 ch0 | |
-| D5 | — | D5 | GPIO21 | — | PWM1 ch2 | onboard **blue** LED (`led1`) |
-| D6 | — | D6 | GPIO22 | — | PWM1 ch3 | onboard **red** LED (`led2`) |
-| D7 | — | D7 | GPIO23 | — | — | |
-| D8 | — | D8 | GPIO0 | — | PWM0 ch0† | |
-| D9 | — | D9 | GPIO1 | — | PWM0 ch1 | |
-| D10 | — | D10 | GPIO2 | SPI1 CS0 | PWM0 ch2 | |
-| D11 | — | D11 | GPIO3 | SPI1 MOSI | PWM0 ch3 | |
-| D12 | — | D12 | GPIO4 | SPI1 MISO | — | |
-| D13 | — | D13 | GPIO5 | SPI1 SCK | — | |
-| SDA | — | D14 | GPIO12 | **I2C0 SDA** | PWM2 ch2 | same net as A4 |
-| SCL | — | D15 | GPIO13 | **I2C0 SCL** | PWM2 ch3 | same net as A5 |
-| A0 | D14 | — | — | — | — | **not connected** on HiFive1 |
-| A1 | D15 | A1 | GPIO9 | SPI1 CS2 | — | no PWM function |
-| A2 | D16 | A2 | GPIO10 | SPI1 CS3 | PWM2 ch0† | |
-| A3 | D17 | A3 | GPIO11 | — | PWM2 ch1 | only usable hardware-PWM pin free on J4 |
-| A4 | D18 | A4 | GPIO12 | **I2C0 SDA** | PWM2 ch2 | = D14 / SDA |
-| A5 | D19 | A5 | GPIO13 | **I2C0 SCL** | PWM2 ch3 | = D15 / SCL |
+| Uno silk | Uno alt # | Zephyr DT | FE310 GPIO | IOF0         | IOF1      | Notes                                   |
+| -------- | --------- | --------- | ---------- | ------------ | --------- | --------------------------------------- |
+| D0       | —         | D0        | GPIO16     | UART0 RX     | —         | console UART                            |
+| D1       | —         | D1        | GPIO17     | UART0 TX     | —         | console UART                            |
+| D2       | —         | D2        | GPIO18     | —            | —         | **no PWM/serial mux** — plain GPIO only |
+| D3       | —         | D3        | GPIO19     | —            | PWM1 ch1  | onboard **green** LED (`led0`)          |
+| D4       | —         | D4        | GPIO20     | —            | PWM1 ch0  |                                         |
+| D5       | —         | D5        | GPIO21     | —            | PWM1 ch2  | onboard **blue** LED (`led1`)           |
+| D6       | —         | D6        | GPIO22     | —            | PWM1 ch3  | onboard **red** LED (`led2`)            |
+| D7       | —         | D7        | GPIO23     | —            | —         |                                         |
+| D8       | —         | D8        | GPIO0      | —            | PWM0 ch0† |                                         |
+| D9       | —         | D9        | GPIO1      | —            | PWM0 ch1  |                                         |
+| D10      | —         | D10       | GPIO2      | SPI1 CS0     | PWM0 ch2  |                                         |
+| D11      | —         | D11       | GPIO3      | SPI1 MOSI    | PWM0 ch3  |                                         |
+| D12      | —         | D12       | GPIO4      | SPI1 MISO    | —         |                                         |
+| D13      | —         | D13       | GPIO5      | SPI1 SCK     | —         |                                         |
+| SDA      | —         | D14       | GPIO12     | **I2C0 SDA** | PWM2 ch2  | same net as A4                          |
+| SCL      | —         | D15       | GPIO13     | **I2C0 SCL** | PWM2 ch3  | same net as A5                          |
+| A0       | D14       | —         | —          | —            | —         | **not connected** on HiFive1            |
+| A1       | D15       | A1        | GPIO9      | SPI1 CS2     | —         | no PWM function                         |
+| A2       | D16       | A2        | GPIO10     | SPI1 CS3     | PWM2 ch0† |                                         |
+| A3       | D17       | A3        | GPIO11     | —            | PWM2 ch1  | only usable hardware-PWM pin free on J4 |
+| A4       | D18       | A4        | GPIO12     | **I2C0 SDA** | PWM2 ch2  | = D14 / SDA                             |
+| A5       | D19       | A5        | GPIO13     | **I2C0 SCL** | PWM2 ch3  | = D15 / SCL                             |
 
 **PWM instances:** PWM0 is 8-bit (`compare-width = <8>`), PWM1 and PWM2 are 16-bit.
 
-**† Channel 0 caveat:** on every FE310 PWM, channel 0's compare register *is* the
+**† Channel 0 caveat:** on every FE310 PWM, channel 0's compare register _is_ the
 shared period register, so it cannot drive an output. The Zephyr `pwm_sifive` driver
 returns `-ENOTSUP` for channel 0. Usable PWM outputs are **channels 1–3 only**. This is
 why STEP must sit on PWM2 **ch1** (GPIO11), not ch0 (GPIO10).
@@ -123,11 +123,11 @@ Because you can solder directly to any pad, the clean choice is the **J4 6-pin h
 (GPIO9–13), which the Arduino-footprint shield does **not** occupy — so the whole shield stays
 intact. GPIO12/13 are reserved for the QWIIC I²C bus, leaving GPIO9/10/11 free.
 
-| A4988 pin | HiFive GPIO | Header | Role | Why this pin |
-|---|---|---|---|---|
-| **STEP** | GPIO10 | J4 / D16 | PWM2_0 | 16-bit PWM channel 0 sets the period → smooth, CPU-free step train |
-| **DIR** | GPIO9 | J4 / D15 | Plain output | Just a level; no timing |
-| **EN** | GPIO11 | J4 / D17 | Plain output | Active-low; drive it actively (don't trust the float) |
+| A4988 pin | HiFive GPIO | Header   | Role         | Why this pin                                                       |
+| --------- | ----------- | -------- | ------------ | ------------------------------------------------------------------ |
+| **STEP**  | GPIO10      | J4 / D16 | PWM2_0       | 16-bit PWM channel 0 sets the period → smooth, CPU-free step train |
+| **DIR**   | GPIO9       | J4 / D15 | Plain output | Just a level; no timing                                            |
+| **EN**    | GPIO11      | J4 / D17 | Plain output | Active-low; drive it actively (don't trust the float)              |
 
 > If J4 is blocked by the seated shield, solder the three jumpers to the J4 pads **before**
 > mounting the shield. STEP must stay on a 16-bit PWM channel (GPIO10).
@@ -142,15 +142,15 @@ and heat. The motor still runs fine if EN is just grounded, but you lose that po
 
 ### A4988 module — required support connections
 
-| A4988 pin | Connect to | Notes |
-|---|---|---|
-| VMOT | 3S LiPo + | **100 µF** electrolytic across VMOT/GND, close to the board |
-| GND (motor) | LiPo − | Common ground with logic |
-| VDD | HiFive 3.3 V | Logic supply |
-| GND (logic) | HiFive GND | |
-| **RESET + SLEEP** | tie together | **Mandatory** — bridge these or the driver won't output |
-| MS1 / MS2 / MS3 | set microstepping | Open = full step; pull high per table for 1/2…1/16 |
-| STEP / DIR / EN | see table above | 3.3 V logic is accepted by the A4988 |
+| A4988 pin         | Connect to        | Notes                                                       |
+| ----------------- | ----------------- | ----------------------------------------------------------- |
+| VMOT              | 3S LiPo +         | **100 µF** electrolytic across VMOT/GND, close to the board |
+| GND (motor)       | LiPo −            | Common ground with logic                                    |
+| VDD               | HiFive 3.3 V      | Logic supply                                                |
+| GND (logic)       | HiFive GND        |                                                             |
+| **RESET + SLEEP** | tie together      | **Mandatory** — bridge these or the driver won't output     |
+| MS1 / MS2 / MS3   | set microstepping | Open = full step; pull high per table for 1/2…1/16          |
+| STEP / DIR / EN   | see table above   | 3.3 V logic is accepted by the A4988                        |
 
 > Classic gotcha: if the motor hums but won't move, you forgot the **RESET↔SLEEP** bridge.
 

@@ -57,7 +57,7 @@ determines the entire environment:
   west topdir (Zephyr "T2 / star topology" application); `make update` copies
   this file into a generated, gitignored `.manifest/` git repo and runs
   `west
-  init -l .manifest`, so the checkouts land in the repo (all
+init -l .manifest`, so the checkouts land in the repo (all
   gitignored).
 - `Dockerfile` bakes only TOOLS: west (installed system-wide, no venv -- a
   disposable container needs none), Zephyr's revision-matched Python deps, the
