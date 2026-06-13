@@ -22,24 +22,24 @@ device.
 
 ## Peripheral matrix — Electrokit EDU Shield on HiFive1 Rev B
 
-| Shield feature          | Header pin | FE310 GPIO   | Status   | Notes                                                         |
-| ----------------------- | ---------- | ------------ | -------- | ------------------------------------------------------------- |
-| Analog light sensor     | A0         | —            | ❌ Dead  | No ADC; A0 isn't routed at all                                |
-| Potentiometer           | A1         | GPIO9        | ❌ Dead  | No ADC — use the encoder. Pin reused as digital (stepper DIR) |
-| External analog GPIO    | A2         | GPIO10       | ❌ Dead  | No ADC. Pin reused as digital (stepper EN)                    |
-| Analog temp sensor      | A3         | GPIO11       | ❌ Dead  | No ADC — use an I²C temp sensor. Pin reused (stepper STEP)    |
-| QWIIC I²C ×2            | A4/A5      | GPIO12/13    | ✅ Works | I²C0 SDA/SCL — **your way in** for sensors                    |
-| UART connector          | D0/D1      | GPIO16/17    | ✅ Works | UART0; also the USB debug console                             |
-| Speaker (PWM tone)      | D2         | GPIO18       | ⚠️ SW    | GPIO18 has no PWM mux — tone needs software toggling          |
-| Rotary encoder + button | D3/D4/D5   | GPIO19/20/21 | ⚠️ Cond. | GPIO19/21 are the onboard green/blue LEDs — disable to reuse  |
-| WS2812B RGB LED         | D6         | GPIO22       | ⚠️ Maybe | GPIO22 is the onboard red LED; tight bit-bang, no RISC-V lib  |
-| Button 1                | D7         | GPIO23       | ❌ Dead  | Mapped in DT but not routed on the Rev B header              |
-| Button 2                | D8         | GPIO0        | ❌ Dead  | Mapped in DT but not routed on the Rev B header              |
-| LED 1                   | D9         | GPIO1        | ✅ Works |                                                              |
-| LED 2                   | D10        | GPIO2        | ✅ Works |                                                              |
-| LED 3                   | D11        | GPIO3        | ⚠️ Cond. | SPI1 MOSI — plain output only if SPI disabled                 |
-| Servo                   | D12        | GPIO4        | ⚠️ Cond. | SPI1 MISO — conflicts if SPI active                           |
-| Button 3                | D13        | GPIO5        | ⚠️ Cond. | SPI1 SCK — no effect while SPI active                         |
+| Shield feature          | Header pin | FE310 GPIO   | Status     | Notes                                                                             |
+| ----------------------- | ---------- | ------------ | ---------- | --------------------------------------------------------------------------------- |
+| Analog light sensor     | A0         | —            | ❌ Dead    | No ADC; A0 isn't routed at all                                                    |
+| Potentiometer           | A1         | GPIO9        | ❌ Dead    | No ADC — use the encoder. Pin reused as digital (stepper DIR)                     |
+| External analog GPIO    | A2         | GPIO10       | ❌ Dead    | No ADC. Pin reused as digital (stepper EN)                                        |
+| Analog temp sensor      | A3         | GPIO11       | ❌ Dead    | No ADC — use an I²C temp sensor. Pin reused (stepper STEP)                        |
+| QWIIC I²C ×2            | A4/A5      | GPIO12/13    | ✅ Works   | I²C0 SDA/SCL — **your way in** for sensors                                        |
+| UART connector          | D0/D1      | GPIO16/17    | ✅ Works   | UART0; also the USB debug console                                                 |
+| Speaker (PWM tone)      | D2         | GPIO18       | ✅ SW tone | Works, but GPIO18 has no PWM mux — tone via software toggling, not the pwm driver |
+| Rotary encoder + button | D3/D4/D5   | GPIO19/20/21 | ⚠️ Cond.   | GPIO19/21 are the onboard green/blue LEDs — disable to reuse                      |
+| WS2812B RGB LED         | D6         | GPIO22       | ⚠️ Maybe   | GPIO22 is the onboard red LED; tight bit-bang, no RISC-V lib                      |
+| Button 1                | D7         | GPIO23       | ❌ Dead    | Mapped in DT but not routed on the Rev B header                                   |
+| Button 2                | D8         | GPIO0        | ❌ Dead    | Mapped in DT but not routed on the Rev B header                                   |
+| LED 1                   | D9         | GPIO1        | ✅ Works   |                                                                                   |
+| LED 2                   | D10        | GPIO2        | ✅ Works   |                                                                                   |
+| LED 3                   | D11        | GPIO3        | ⚠️ Cond.   | SPI1 MOSI — plain output only if SPI disabled                                     |
+| Servo                   | D12        | GPIO4        | ⚠️ Cond.   | SPI1 MISO — conflicts if SPI active                                               |
+| Button 3                | D13        | GPIO5        | ⚠️ Cond.   | SPI1 SCK — no effect while SPI active                                             |
 
 **Net result:** all four analog sensors and two of three buttons are gone. Everything you
 actually need survives: speaker, encoder, LEDs, UART console, and both QWIIC I²C ports.
@@ -131,11 +131,11 @@ intact. GPIO12/13 are reserved for the QWIIC I²C bus, leaving GPIO9/10/11 for t
 GPIO9/10 carry SPI1 by default — disable SPI in the overlay (see the pin reference above) to use
 them as plain GPIO.
 
-| A4988 pin | HiFive GPIO | Header  | Role         | Why this pin                                                                                                |
+| A4988 pin | HiFive GPIO | Header  | Role         | Why this pin                                                                                               |
 | --------- | ----------- | ------- | ------------ | ---------------------------------------------------------------------------------------------------------- |
 | **STEP**  | GPIO11      | J4 (A3) | PWM2 ch1     | Only free J4 pin with a usable 16-bit PWM output (ch0 just holds the period) → smooth, CPU-free step train |
-| **DIR**   | GPIO9       | J4 (A1) | Plain output | Just a level, no timing. SPI1 CS2 by default — free it in the overlay                                       |
-| **EN**    | GPIO10      | J4 (A2) | Plain output | Active-low; drive it actively. SPI1 CS3 by default — free it in the overlay                                 |
+| **DIR**   | GPIO9       | J4 (A1) | Plain output | Just a level, no timing. SPI1 CS2 by default — free it in the overlay                                      |
+| **EN**    | GPIO10      | J4 (A2) | Plain output | Active-low; drive it actively. SPI1 CS3 by default — free it in the overlay                                |
 
 > If J4 is blocked by the seated shield, solder the three jumpers to the J4 pads **before**
 > mounting the shield. STEP must stay on a usable 16-bit PWM channel: GPIO11 = PWM2 ch1 (ch0 on
@@ -143,8 +143,7 @@ them as plain GPIO.
 
 **STEP via PWM:** step rate ≈ f_scaled / pwmcmp0, where f_scaled = 16 MHz / 2^pwmscale and
 pwmcmp0 is PWM2's shared period register. The STEP pin is **channel 1** (pwmcmp1 sets the pulse
-width); channel 0 only ever holds the period and can't drive a pin. 16-bit (pwmcmp0 up to
-65535) gives near-continuous speed/accel resolution. The shared 8-bit PWM0 would quantize speed
+width); channel 0 only ever holds the period and can't drive a pin. 16-bit (pwmcmp0 up to 65535) gives near-continuous speed/accel resolution. The shared 8-bit PWM0 would quantize speed
 in ~4–8 % jumps and force constant rescaling — avoid it; the PWM2 channels are already 16-bit.
 
 **EN:** kept because you're on battery — driving EN high between moves cuts holding current
