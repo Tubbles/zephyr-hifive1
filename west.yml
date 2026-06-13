@@ -1,0 +1,20 @@
+# Single source of truth for which Zephyr (and modules) this project builds
+# against. Bump `revision`, rebuild the image, done. This repo is itself the
+# manifest repo (Zephyr "T2 / star topology" application).
+manifest:
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+  projects:
+    - name: zephyr
+      remote: zephyrproject-rtos
+      revision: v4.4.1
+      # Pulls in every module this Zephyr release depends on (HALs, CMSIS, ...)
+      # at the versions Zephyr pins. Large but correct; narrow later if desired.
+      import: true
+  self:
+    # The workspace topdir is the repo root; `make update` copies this file
+    # into a generated, gitignored `.manifest/` git repo and runs
+    # `west init -l .manifest`, so the checkouts (zephyr/, modules/, ...) land
+    # alongside it under the repo. This path is relative to that topdir.
+    path: .manifest

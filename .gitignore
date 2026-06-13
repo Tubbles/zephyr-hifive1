@@ -1,0 +1,10 @@
+/build/
+
+# West workspace materialized in-repo by `make update` (the repo root is the
+# west topdir). All generated; none of it is tracked.
+/.manifest/
+/.west/
+/zephyr/
+/modules/
+/bootloader/
+/tools/
