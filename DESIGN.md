@@ -44,6 +44,62 @@ actually need survives: speaker, encoder, LEDs, UART console, and both QWIIC I²
 
 ---
 
+## Pin naming reference (Uno ↔ Zephyr ↔ FE310)
+
+Three naming systems describe the same physical header, which is the source of most
+confusion. Always disambiguate by **FE310 GPIO number**, that is the only label the
+Zephyr devicetree and the FE310 registers actually use.
+
+- **Uno silk** is the printed label (D0–D13, A0–A5).
+- **Uno alt #** is the Arduino habit of also numbering the analog pins as digital 14–19
+  (A0=14 … A5=19). This is where the design's "D18/D19" for I²C comes from (A4/A5).
+- **Zephyr DT** is the `ARDUINO_HEADER_R3_*` label in the board devicetree. Note Zephyr
+  reuses **D14/D15 for the dedicated SDA/SCL pins** (= the A4/A5 nets), which collides
+  with the Uno alt numbering where D14/D15 would be A0/A1. Same pin, different label.
+- **IOF0 / IOF1** are the FE310's two pin-mux alternate functions. A pin is GPIO **or**
+  one IOF at a time, selected per-peripheral by the devicetree `pinctrl`.
+
+Sourced from `boards/sifive/hifive1/hifive1.dts` (the `arduino_header` map),
+`hifive1-pinctrl.dtsi`, and `dts/riscv/sifive/riscv32-fe310.dtsi`.
+
+| Uno silk | Uno alt # | Zephyr DT | FE310 GPIO | IOF0 | IOF1 | Notes |
+|---|---|---|---|---|---|---|
+| D0 | — | D0 | GPIO16 | UART0 RX | — | console UART |
+| D1 | — | D1 | GPIO17 | UART0 TX | — | console UART |
+| D2 | — | D2 | GPIO18 | — | — | **no PWM/serial mux** — plain GPIO only |
+| D3 | — | D3 | GPIO19 | — | PWM1 ch1 | onboard **green** LED (`led0`) |
+| D4 | — | D4 | GPIO20 | — | PWM1 ch0 | |
+| D5 | — | D5 | GPIO21 | — | PWM1 ch2 | onboard **blue** LED (`led1`) |
+| D6 | — | D6 | GPIO22 | — | PWM1 ch3 | onboard **red** LED (`led2`) |
+| D7 | — | D7 | GPIO23 | — | — | |
+| D8 | — | D8 | GPIO0 | — | PWM0 ch0† | |
+| D9 | — | D9 | GPIO1 | — | PWM0 ch1 | |
+| D10 | — | D10 | GPIO2 | SPI1 CS0 | PWM0 ch2 | |
+| D11 | — | D11 | GPIO3 | SPI1 MOSI | PWM0 ch3 | |
+| D12 | — | D12 | GPIO4 | SPI1 MISO | — | |
+| D13 | — | D13 | GPIO5 | SPI1 SCK | — | |
+| SDA | — | D14 | GPIO12 | **I2C0 SDA** | PWM2 ch2 | same net as A4 |
+| SCL | — | D15 | GPIO13 | **I2C0 SCL** | PWM2 ch3 | same net as A5 |
+| A0 | D14 | — | — | — | — | **not connected** on HiFive1 |
+| A1 | D15 | A1 | GPIO9 | SPI1 CS2 | — | no PWM function |
+| A2 | D16 | A2 | GPIO10 | SPI1 CS3 | PWM2 ch0† | |
+| A3 | D17 | A3 | GPIO11 | — | PWM2 ch1 | only usable hardware-PWM pin free on J4 |
+| A4 | D18 | A4 | GPIO12 | **I2C0 SDA** | PWM2 ch2 | = D14 / SDA |
+| A5 | D19 | A5 | GPIO13 | **I2C0 SCL** | PWM2 ch3 | = D15 / SCL |
+
+**PWM instances:** PWM0 is 8-bit (`compare-width = <8>`), PWM1 and PWM2 are 16-bit.
+
+**† Channel 0 caveat:** on every FE310 PWM, channel 0's compare register *is* the
+shared period register, so it cannot drive an output. The Zephyr `pwm_sifive` driver
+returns `-ENOTSUP` for channel 0. Usable PWM outputs are **channels 1–3 only**. This is
+why STEP must sit on PWM2 **ch1** (GPIO11), not ch0 (GPIO10).
+
+**Default-DTS conflicts to resolve in an overlay:** as shipped, `spi1`+`spi2` are enabled
+and claim GPIO2/3/4/5/9/10, while `pwm2` (ch1–3) and `i2c0` both claim GPIO12/13. Free
+GPIO9/10 by disabling SPI, and trim `pwm2` to ch1 only so `i2c0` can own GPIO12/13.
+
+---
+
 ## Battery monitoring plan (via QWIIC, no ADC needed)
 
 Both readings go over I²C through the shield's two QWIIC connectors — no soldering, 3.3 V logic.
