@@ -63,11 +63,14 @@ determines the entire environment:
   pack is fetched straight from Segger at a pinned version; its download POST
   auto-accepts Segger's EULA, so building the image accepts it.
 - `dev.sh` bind-mounts the repo as the workspace topdir at its **host path**
-  (`$PWD:$PWD:z`, so in-container paths match the host) and runs there with
+  (`$PWD:$PWD`, so in-container paths match the host) and runs there with
   `--userns=keep-id` so artifacts (and the workspace) come out owned by you,
   `HOME=/tmp` for a writable cache, and `ZEPHYR_BASE=$repo/zephyr` pointing at
   the checkout (the image has no Zephyr of its own). It also mounts
-  `/dev/bus/usb` so `west flash` can reach the board's J-Link over USB.
+  `/dev/bus/usb` so `west flash` can reach the board's J-Link over USB, and runs
+  with `--security-opt label=disable` so SELinux on a Fedora-style host does not
+  block opening the probe's `usb_device_t` node (which also makes the mount's
+  former `:z` relabel unnecessary).
 
 This split is deliberate: baking the workspace as root while running as your uid
 caused git "dubious ownership" failures that broke west's manifest import. With
