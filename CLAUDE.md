@@ -45,13 +45,14 @@ cleanly and (optionally) flashing + watching `console.sh` output.
 Source lives on the host; only tools live in the image. The repo alone
 determines the entire environment:
 
-- `west.yml` pins the Zephyr revision and imports Zephyr's manifest with a
-  `name-allowlist` so only the modules this board needs are fetched (empty for
-  the in-tree FE310 / HiFive1; widen it when a feature needs a module). The repo
-  root is the west topdir (Zephyr "T2 / star topology" application); `make
-  update` copies this file into a generated, gitignored `.manifest/` git repo
-  and runs `west init -l .manifest`, so the checkouts land in the repo (all
-  gitignored).
+- `west.yml` pins the Zephyr revision and clones only Zephyr, no modules, for
+  the in-tree FE310 / HiFive1: it sets `west-commands` to register the
+  build/flash extensions and omits `import:` so west fetches no module repos
+  (add an `import` allowlist when a feature needs a module; an empty allowlist
+  imports everything, so don't use that to mean "none"). The repo root is the
+  west topdir (Zephyr "T2 / star topology" application); `make update` copies
+  this file into a generated, gitignored `.manifest/` git repo and runs `west
+  init -l .manifest`, so the checkouts land in the repo (all gitignored).
 - `Dockerfile` bakes only TOOLS: west (installed system-wide, no venv -- a
   disposable container needs none), Zephyr's revision-matched Python deps, and
   the RISC-V SDK. It harvests the deps + SDK from a throwaway workspace built
