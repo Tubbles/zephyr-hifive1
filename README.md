@@ -4,8 +4,9 @@ Self-contained Zephyr build environment for the SiFive HiFive1 Rev B
 (FE310-G002). The git repo plus the Dockerfile fully describe the environment:
 nothing is installed on your machine except Podman.
 
-- `west.yml` pins the Zephyr revision (and, via `import: true`, all the modules
-  that release depends on).
+- `west.yml` pins the Zephyr revision and uses a `name-allowlist` to fetch only
+  the modules this board needs (empty for the in-tree FE310; widen it when a
+  feature needs a module).
 - `Dockerfile` bakes only the tools (west, Zephyr's Python build deps, the
   RISC-V Zephyr SDK) into an image. The Zephyr source stays on the host.
 - The repo itself is the west workspace: `./dev.sh make update` fetches the

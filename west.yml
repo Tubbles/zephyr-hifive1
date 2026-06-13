@@ -9,9 +9,14 @@ manifest:
     - name: zephyr
       remote: zephyrproject-rtos
       revision: v4.4.1
-      # Pulls in every module this Zephyr release depends on (HALs, CMSIS, ...)
-      # at the versions Zephyr pins. Large but correct; narrow later if desired.
-      import: true
+      # Import Zephyr's manifest -- this is also how west learns the build/flash
+      # extension commands -- but pull only the modules this board needs.
+      # FE310 / HiFive1 support is entirely in-tree and picolibc comes from the
+      # SDK toolchain (CONFIG_PICOLIBC_USE_TOOLCHAIN), so nothing external is
+      # required: the allowlist is empty. Add a module name here if you enable a
+      # feature that needs one (e.g. a sensor HAL, a filesystem, mbedTLS).
+      import:
+        name-allowlist: []
   self:
     # The workspace topdir is the repo root; `make update` copies this file
     # into a generated, gitignored `.manifest/` git repo and runs
