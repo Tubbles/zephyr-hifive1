@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Print the HiFive1 Rev B serial console. The onboard J-Link OB exposes the
-# board UART as a USB CDC-ACM device (/dev/ttyACM*). This is a read-only
+# Print the XIAO ESP32-C6 serial console. The board's native USB-Serial/JTAG
+# port enumerates as a USB CDC-ACM device (/dev/ttyACM*). This is a read-only
 # monitor built only on coreutils (stty + cat); Ctrl-C to stop.
 #
 # Usage:
