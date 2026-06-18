@@ -1,6 +1,7 @@
-# Tools-only Zephyr build environment for the SiFive HiFive1 Rev B.
+# Tools-only Zephyr build environment for the Seeed XIAO ESP32-C6.
 #
-# This image bakes only the TOOLS: west, Zephyr's Python build deps, the
+# This image bakes only the TOOLS: west, Zephyr's Python build deps (which
+# include esptool for flashing, pulled in via the hal_espressif module), the
 # RISC-V Zephyr SDK, and Prettier (Markdown formatter). It deliberately contains
 # NO Zephyr workspace -- the source
 # checkout (zephyr/, modules/, ...) lives on the host alongside your project and
@@ -26,8 +27,9 @@ RUN apt-get update \
 # No venv: a disposable container owns its whole Python environment, so install
 # west system-wide. --break-system-packages overrides Debian's PEP 668
 # "externally managed" guard, which only exists to protect a real host's python.
-# Pin west explicitly: the rest of the toolchain is pinned (Zephyr revision, SDK,
-# J-Link), so the orchestrator that drives them should be too.
+# Pin west explicitly: the rest of the toolchain is pinned (Zephyr revision,
+# SDK, esptool via the Zephyr revision), so the orchestrator that drives them
+# should be too.
 RUN pip install --break-system-packages --no-cache-dir west==1.5.0
 
 # --- Harvest the pinned tools, then throw the source away ------------------
@@ -52,26 +54,14 @@ RUN mkdir -p /tmp/ws/.manifest \
  && rm -rf /tmp/ws /tmp/west.yml /root/.cache
 ENV ZEPHYR_SDK_INSTALL_DIR=/opt/zephyr-sdk
 
-# --- J-Link tools for in-container flashing --------------------------------
-# The HiFive1 Rev B's onboard Segger J-Link OB is driven by west's `jlink`
-# runner, which shells out to JLinkExe. Fetch the pinned J-Link Software pack
-# straight from Segger and extract its self-contained tree (JLinkExe + the
-# libjlinkarm shared libs, which resolve via $ORIGIN rpath) onto PATH; libusb-1.0
-# is JLinkExe's USB backend. The download POST programmatically accepts Segger's
-# EULA (accept_license_agreement=accepted) -- building this image accepts it.
-# Pinned to V950 to match the repo's pin-everything policy; bump JLINK_VERSION to
-# change it. Flashing also needs the host USB device passed in, which dev.sh does.
-ARG JLINK_VERSION=V950
-RUN apt-get update \
- && apt-get install -y --no-install-recommends libusb-1.0-0 \
- && rm -rf /var/lib/apt/lists/* \
- && mkdir -p /opt/segger/jlink \
- && wget -q --post-data='accept_license_agreement=accepted&non_emb_ctr=confirmed' \
-        "https://www.segger.com/downloads/jlink/JLink_Linux_${JLINK_VERSION}_x86_64.tgz" \
-        -O /tmp/jlink.tgz \
- && tar xzf /tmp/jlink.tgz --strip-components=1 -C /opt/segger/jlink \
- && rm /tmp/jlink.tgz
-ENV PATH="/opt/segger/jlink:${PATH}"
+# --- Flashing: esptool over USB-Serial/JTAG --------------------------------
+# The XIAO ESP32-C6 flashes through its native USB-Serial/JTAG port with esptool
+# (the `esp32` west runner shells out to it), not a hardware debug probe, so
+# there is nothing to download here. esptool + pyserial are already installed by
+# the `west packages pip` step above: with hal_espressif in the workspace, that
+# step picks up the module's requirement files, and the esptool version is
+# pinned by the Zephyr revision. dev.sh passes the board's /dev/ttyACM* serial
+# node into the container so `west flash` can reach it.
 
 # --- Formatters ------------------------------------------------------------
 # `./dev.sh make format` (and `./dev.sh ./format.sh`) run Prettier on the repo's

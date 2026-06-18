@@ -9,10 +9,10 @@
 #
 # (`make clean` is just an rm and works on the host too.)
 #
-# Override the board on the command line: ./dev.sh make build BOARD=hifive1
+# Override the board on the command line: ./dev.sh make build BOARD=esp32c6_devkitc/esp32c6/hpcore
 .DEFAULT_GOAL := help
 
-BOARD ?= hifive1_revb
+BOARD ?= xiao_esp32c6/esp32c6/hpcore
 
 .PHONY: help update check-workspace build pristine clean menuconfig boards format
 
@@ -33,6 +33,11 @@ update: ## Fetch/refresh the Zephyr workspace into the repo (run once, and after
 	    || git -C .manifest -c user.email=build@local -c user.name=build commit -qm pin; \
 	fi
 	west update
+	# Espressif ships its WiFi/BT libraries and bootloader as binary blobs that
+	# live outside the source tree. Fetch them so builds that enable the radios
+	# (or MCUboot) link; a plain simple-boot app does not strictly need them, but
+	# fetching is idempotent and saves a confusing failure later.
+	west blobs fetch hal_espressif
 
 # west build/boards are Zephyr extension commands; they only exist once the
 # workspace has been fetched. Fail with a pointer instead of a cryptic error.

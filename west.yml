@@ -9,19 +9,20 @@ manifest:
     - name: zephyr
       remote: zephyrproject-rtos
       revision: v4.4.1
-      # Clone ONLY Zephyr, no modules: FE310 / HiFive1 support is entirely
-      # in-tree and picolibc comes from the SDK toolchain
-      # (CONFIG_PICOLIBC_USE_TOOLCHAIN), so nothing external is needed.
-      # `west-commands` registers Zephyr's build/flash extension commands --
-      # normally these ride in via `import:`, which we deliberately omit so west
-      # does not fetch the ~40 module repos (all the HALs, fatfs, mbedTLS, ...).
-      # To add a module later, replace the west-commands line with an import
-      # that allowlists it:
-      #     import:
-      #       name-allowlist: [hal_foo]
+      # ESP32-C6 (XIAO) support is in-tree EXCEPT the Espressif HAL and the
+      # 2nd-stage bootloader, which live in the hal_espressif module. So import
+      # Zephyr's own manifest but allowlist just that one module: west fetches
+      # hal_espressif at the revision Zephyr pins for v4.4.1, and none of the
+      # other ~40 HAL/fatfs/mbedTLS repos. picolibc still comes from the SDK
+      # toolchain (CONFIG_PICOLIBC_USE_TOOLCHAIN), so nothing else is needed.
+      # Importing Zephyr's manifest also registers its build/flash west
+      # extension commands, so the standalone `west-commands:` line is gone.
       # Do NOT use an empty allowlist to mean "no modules": west reads `[]` as
-      # "no filter" and imports everything.
-      west-commands: scripts/west-commands.yml
+      # "no filter" and imports everything. To add another module, append its
+      # name to the allowlist below.
+      import:
+        name-allowlist:
+          - hal_espressif
   self:
     # The workspace topdir is the repo root; `make update` copies this file
     # into a generated, gitignored `.manifest/` git repo and runs
