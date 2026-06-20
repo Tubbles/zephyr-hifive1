@@ -2,6 +2,18 @@
 #include <zephyr/dt-bindings/pwm/pwm.h>
 
 /*
+ * Pinctrl bindings for the LEDC_CH*_GPIO* pinmux macros used below. A normal
+ * build pulls these in transitively via the board devicetree, but the MCUboot
+ * DirectXIP slot-1 variant re-applies this overlay on top of the already
+ * macro-expanded devicetree, where the defines are gone -- so include them here
+ * to keep the overlay self-contained. All three are include-guarded, so this is
+ * a no-op in the normal build.
+ */
+#include <zephyr/dt-bindings/pinctrl/esp-pinctrl-common.h>
+#include <zephyr/dt-bindings/pinctrl/esp32c6-pinctrl.h>
+#include <zephyr/dt-bindings/pinctrl/esp32c6-gpio-sigmap.h>
+
+/*
  * A4988 stepper control + LEDC speaker tone on the Seeed XIAO ESP32-C6 header
  * (see DESIGN.md). The control/audio lines use the SPI2 pins (D8-D10) plus D3,
  * which keeps the only ADC-capable header pins (D0-D2) free for battery sensing
